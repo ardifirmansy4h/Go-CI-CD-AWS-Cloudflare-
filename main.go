@@ -7,7 +7,7 @@ import (
 
 func main() {
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        fmt.Fprintln(w, "Halo dari Go CI/CD  !!!")
+        fmt.Fprintln(w, "Halo dari Go CI/CDaaa  !!!")
     })
 
     fmt.Println("Server running on :8080")
