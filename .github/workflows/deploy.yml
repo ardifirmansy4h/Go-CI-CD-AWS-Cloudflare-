@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout source code
+    - name: Checkout code
       uses: actions/checkout@v3
 
     - name: Setup Go
@@ -23,20 +23,22 @@ jobs:
         go mod tidy
         GOOS=linux GOARCH=amd64 go build -o go-app .
 
-    - name: Upload binary ke EC2
+    - name: Upload binary ke EC2 (home dir)
       uses: appleboy/scp-action@v0.1.6
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_KEY }}
         source: "go-app"
-        target: "/home/${{ secrets.EC2_USER }}/app-go"
+        target: "/home/ec2-user/go-app-temp"
 
-    - name: Restart service di EC2
+    - name: Pindahkan binary ke /usr/local/bin dan restart service
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_KEY }}
         script: |
+          sudo mv /home/ec2-user/go-app-temp /usr/local/bin/go-app
+          sudo chmod +x /usr/local/bin/go-app
           sudo systemctl restart go-app.service
