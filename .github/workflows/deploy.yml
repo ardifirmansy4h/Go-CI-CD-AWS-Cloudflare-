@@ -3,34 +3,34 @@ name: Deploy Go App to EC2
 on:
   push:
     branches:
-      - main
+      - main  # Atau ganti sesuai nama branch utama kamu
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout source code
       uses: actions/checkout@v3
 
     - name: Setup Go
       uses: actions/setup-go@v4
       with:
-        go-version: 1.21
+        go-version: 1.21  # Atau versi Go yang kamu gunakan
 
     - name: Build Go binary
       run: |
         go mod tidy
         GOOS=linux GOARCH=amd64 go build -o go-app .
 
-    - name: Upload binary ke EC2 (home dir)
+    - name: Upload binary ke EC2 (dengan nama dan path yang benar)
       uses: appleboy/scp-action@v0.1.6
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_KEY }}
         source: "go-app"
-        target: "/home/ec2-user/go-app-temp"
+        target: "/home/ec2-user/go-app-temp/go-app"
 
     - name: Pindahkan binary ke /usr/local/bin dan restart service
       uses: appleboy/ssh-action@v1.0.0
@@ -39,6 +39,6 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_KEY }}
         script: |
-          sudo mv /home/ec2-user/go-app-temp /usr/local/bin/go-app
+          sudo mv -f /home/ec2-user/go-app-temp/go-app /usr/local/bin/go-app
           sudo chmod +x /usr/local/bin/go-app
           sudo systemctl restart go-app.service
